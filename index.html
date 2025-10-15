@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ブログネタ無限生成ツール</title>
+
+    <style>
+        /* Googleからおしゃれなフォントを読み込む */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap');
+
+        /* 全体の設定 */
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #121212; /* 背景をリッチな黒に */
+            color: #e0e0e0; /* 文字を少し柔らかい白に */
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* コンテンツ全体の入れ物 */
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        /* ジェネレーターの箱 */
+        .generator-box {
+            background-color: #1e1e1e; /* 少し明るい黒 */
+            border-radius: 16px; /* 角を丸くする */
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* 立体的に見せる影 */
+            border: 1px solid #333;
+        }
+
+        /* メインタイトル */
+        h1 {
+            text-align: center;
+            color: #ffffff;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        /* 説明文 */
+        .description {
+            text-align: center;
+            color: #aaa;
+            margin-bottom: 30px;
+        }
+
+        /* 入力ボックス */
+        #theme-input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+            font-size: 16px;
+            box-sizing: border-box; /* paddingを含めて幅100%にする */
+            margin-bottom: 20px;
+        }
+
+        #theme-input:focus {
+            outline: none;
+            border-color: #bb86fc; /* フォーカス時に色が変わる */
+            box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.2);
+        }
+
+        /* 生成ボタン */
+        #generate-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #bb86fc, #6200ee); /* グラデーション */
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer; /* マウスカーソルを指の形に */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #generate-btn:hover {
+            transform: translateY(-2px); /* 少し浮き上がる動き */
+            box-shadow: 0 8px 20px rgba(187, 134, 252, 0.3);
+        }
+
+        /* 結果表示エリア */
+        #results-area {
+            margin-top: 30px;
+        }
+
+        /* 生成されたアイデアの各項目 */
+        .idea-item {
+            background-color: #2c2c2c;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #bb86fc; /* 左側にアクセントの線 */
+            opacity: 0; /* 最初は透明にしておく */
+            transform: translateY(20px); /* 少し下から登場 */
+            animation: fadeIn 0.5s ease forwards; /* フェードインのアニメーション */
+        }
+
+        /* アニメーションの定義 */
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="generator-box">
+            <h1>ブログネタ無限生成ツール ✍️</h1>
+            <p class="description">キーワードを入れて、ユニークなブログタイトル案を見つけよう！</p>
+            <input type="text" id="theme-input" placeholder="例：中学2年生の勉強法">
+            <button id="generate-btn">アイデアを生成する</button>
+            <div id="results-area">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // ページ上の部品をJavaScriptで操作できるように、あらかじめ見つけておく
+        const generateBtn = document.getElementById('generate-btn');
+        const themeInput = document.getElementById('theme-input');
+        const resultsArea = document.getElementById('results-area');
+
+        // アイデアを生成する関数
+        function generateIdeas() {
+            // 1. 入力されたキーワードを取得する
+            const theme = themeInput.value;
+
+            // 2. キーワードが空っぽなら、処理を中断
+            if (theme.trim() === '') {
+                alert('キーワードを入力してください！');
+                return;
+            }
+
+            // 3. 古い結果が残っていれば、一旦キレイにする
+            resultsArea.innerHTML = '';
+
+            // 4. タイトルの組み立てに使う「言葉の部品」をたくさん用意しておく
+            const prefixes = ['【初心者必見】', '【完全ガイド】', '知らないと損する', 'たった5分でわかる', '今さら聞けない', '【保存版】'];
+            const middles = ['の基本的な使い方', 'を120%活用するテクニック', 'の選び方とコツ', 'が驚くほど上達する練習法', 'のよくある失敗と対策', 'を成功させる秘訣'];
+            const suffixes = ['ベスト5', '7つのステップ', '完全ロードマップ', '虎の巻', 'まとめ', '徹底解説'];
+
+            // 5. 10個のアイデアを生成して表示する
+            for (let i = 0; i < 10; i++) {
+                // 言葉の部品をランダムに選ぶ
+                const randomPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+                const randomMiddle = middles[Math.floor(Math.random() * middles.length)];
+                const randomSuffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+
+                // ランダムに選んだ部品とキーワードを組み合わせて、一つのタイトルを作る
+                // 3回に1回はシンプルなタイトルにする
+                let finalTitle = '';
+                if (i % 3 === 0) {
+                    finalTitle = `${randomPrefix}「${theme}」${randomMiddle}`;
+                } else {
+                    finalTitle = `「${theme}」${randomMiddle} ${randomSuffix}`;
+                }
+
+                // 画面に表示するためのHTML要素を作る
+                const ideaElement = document.createElement('div');
+                ideaElement.className = 'idea-item'; // CSSでデザインしたスタイルを適用
+                ideaElement.textContent = finalTitle;
+                
+                // 少しずつずらして表示されるようにアニメーションの遅延を設定
+                ideaElement.style.animationDelay = `${i * 0.1}s`;
+
+                // 結果表示エリアに追加する
+                resultsArea.appendChild(ideaElement);
+            }
+        }
+
+        // 「生成ボタン」がクリックされたら、generateIdeas関数を実行する
+        generateBtn.addEventListener('click', generateIdeas);
+
+        // Enterキーでも生成できるようにする
+        themeInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                generateIdeas();
+            }
+        });
+    </script>
+
+</body>
+</html>
